@@ -1,11 +1,74 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Star, Quote } from 'lucide-react';
-import { mockData } from '../mock';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const Testimonials = () => {
-  const { testimonials } = mockData;
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTestimonials();
+  }, []);
+
+  const fetchTestimonials = async () => {
+    try {
+      const response = await axios.get(`${API}/testimonials`);
+      setTestimonials(response.data);
+    } catch (error) {
+      console.error('Error fetching testimonials:', error);
+      // Fallback to mock data if API fails
+      const { mockData } = await import('../mock');
+      setTestimonials(mockData.testimonials);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="animate-pulse">
+              <div className="h-6 bg-gray-200 rounded w-32 mx-auto mb-4"></div>
+              <div className="h-10 bg-gray-200 rounded w-96 mx-auto mb-6"></div>
+              <div className="h-6 bg-gray-200 rounded w-2/3 mx-auto"></div>
+            </div>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((item) => (
+              <Card key={item} className="animate-pulse">
+                <CardContent className="p-6">
+                  <div className="flex items-center mb-4">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <div key={star} className="h-4 w-4 bg-gray-200 rounded mr-1"></div>
+                    ))}
+                  </div>
+                  <div className="space-y-2 mb-6">
+                    <div className="h-4 bg-gray-200 rounded w-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                    <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-gray-200 rounded-full mr-4"></div>
+                    <div>
+                      <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+                      <div className="h-3 bg-gray-200 rounded w-16"></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-20 bg-white">
@@ -27,7 +90,7 @@ const Testimonials = () => {
         {/* Testimonials Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {testimonials.map((testimonial) => (
-            <Card key={testimonial.id} className="relative border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+            <Card key={testimonial.id || testimonial._id} className="relative border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
               {/* Quote Icon */}
               <div className="absolute top-4 right-4 opacity-10">
                 <Quote className="h-12 w-12 text-blue-600" />
