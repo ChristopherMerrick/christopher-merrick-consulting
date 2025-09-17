@@ -1,6 +1,7 @@
 {
   "name": "christopher-merrick-consulting",
   "version": "1.0.0",
+  "private": true,
   "description": "Professional database consulting website for UK businesses - Christopher Merrick, Sheffield",
   "scripts": {
     "build": "cd frontend && yarn install && yarn build",
@@ -13,7 +14,7 @@
     "url": "https://github.com/ChristopherMerrick/christopher-merrick-consulting.git"
   },
   "author": "Christopher Merrick",
-  "license": "PROPRIETARY",
+  "license": "UNLICENSED",
   "workspaces": [
     "frontend"
   ],
