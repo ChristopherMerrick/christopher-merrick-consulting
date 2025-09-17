@@ -1,12 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Database, BarChart3, Users, ArrowRight, Check } from 'lucide-react';
-import { mockData } from '../mock';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const Services = () => {
-  const { services } = mockData;
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    try {
+      const response = await axios.get(`${API}/services`);
+      setServices(response.data);
+    } catch (error) {
+      console.error('Error fetching services:', error);
+      // Fallback to mock data if API fails
+      const { mockData } = await import('../mock');
+      setServices(mockData.services);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getIcon = (iconName) => {
     const icons = {
@@ -17,6 +39,41 @@ const Services = () => {
     const Icon = icons[iconName];
     return Icon ? <Icon className="h-8 w-8" /> : <Database className="h-8 w-8" />;
   };
+
+  if (loading) {
+    return (
+      <section id="services" className="py-20 bg-white">
+        <div className="container mx-auto px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="animate-pulse">
+              <div className="h-6 bg-gray-200 rounded w-32 mx-auto mb-4"></div>
+              <div className="h-10 bg-gray-200 rounded w-96 mx-auto mb-6"></div>
+              <div className="h-6 bg-gray-200 rounded w-2/3 mx-auto"></div>
+            </div>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((item) => (
+              <Card key={item} className="animate-pulse">
+                <CardHeader>
+                  <div className="w-16 h-16 bg-gray-200 rounded-xl mb-4"></div>
+                  <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-full"></div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 mb-6">
+                    {[1, 2, 3, 4].map((feature) => (
+                      <div key={feature} className="h-4 bg-gray-200 rounded w-full"></div>
+                    ))}
+                  </div>
+                  <div className="h-10 bg-gray-200 rounded w-full"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="services" className="py-20 bg-white">
@@ -38,7 +95,7 @@ const Services = () => {
         {/* Services Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {services.map((service, index) => (
-            <Card key={service.id} className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
+            <Card key={service.id || index} className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-cyan-600"></div>
               
               <CardHeader className="pb-4">
