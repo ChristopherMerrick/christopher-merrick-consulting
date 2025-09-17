@@ -5,8 +5,12 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Phone, Mail, MapPin, Clock, Send, CheckCircle } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { mockData } from '../mock';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const Contact = () => {
   const { contact, consultations } = mockData;
@@ -18,14 +22,39 @@ const Contact = () => {
     consultationType: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Mock form submission
-    console.log('Form submitted:', formData);
-    setIsSubmitted(true);
-    setTimeout(() => setIsSubmitted(false), 3000);
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      const response = await axios.post(`${API}/contact`, formData);
+      
+      if (response.data.success) {
+        setIsSubmitted(true);
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          company: '',
+          consultationType: '',
+          message: ''
+        });
+        
+        // Reset success message after 5 seconds
+        setTimeout(() => setIsSubmitted(false), 5000);
+      }
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      setError('There was an error sending your message. Please try again or contact us directly.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (field, value) => {
@@ -33,6 +62,8 @@ const Contact = () => {
       ...prev,
       [field]: value
     }));
+    // Clear error when user starts typing
+    if (error) setError('');
   };
 
   return (
@@ -137,8 +168,23 @@ const Contact = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {!isSubmitted ? (
+                {isSubmitted ? (
+                  <div className="text-center py-12">
+                    <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Message Sent Successfully!</h3>
+                    <p className="text-gray-600">
+                      Thank you for your inquiry. We'll get back to you within 24 hours.
+                    </p>
+                  </div>
+                ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
+                    {error && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+                        <AlertCircle className="h-5 w-5 text-red-500 mr-3" />
+                        <p className="text-red-700">{error}</p>
+                      </div>
+                    )}
+
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -151,6 +197,7 @@ const Contact = () => {
                           onChange={(e) => handleChange('name', e.target.value)}
                           placeholder="Your full name"
                           className="w-full"
+                          disabled={isSubmitting}
                         />
                       </div>
                       <div>
@@ -164,6 +211,7 @@ const Contact = () => {
                           onChange={(e) => handleChange('email', e.target.value)}
                           placeholder="your@email.com"
                           className="w-full"
+                          disabled={isSubmitting}
                         />
                       </div>
                     </div>
@@ -179,6 +227,7 @@ const Contact = () => {
                           onChange={(e) => handleChange('phone', e.target.value)}
                           placeholder="+44 xxx xxx xxxx"
                           className="w-full"
+                          disabled={isSubmitting}
                         />
                       </div>
                       <div>
@@ -191,6 +240,7 @@ const Contact = () => {
                           onChange={(e) => handleChange('company', e.target.value)}
                           placeholder="Your company name"
                           className="w-full"
+                          disabled={isSubmitting}
                         />
                       </div>
                     </div>
@@ -199,7 +249,7 @@ const Contact = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Consultation Type
                       </label>
-                      <Select onValueChange={(value) => handleChange('consultationType', value)}>
+                      <Select onValueChange={(value) => handleChange('consultationType', value)} disabled={isSubmitting}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select consultation type" />
                         </SelectTrigger>
@@ -224,6 +274,7 @@ const Contact = () => {
                         placeholder="Please describe your database needs, current challenges, and what you hope to achieve..."
                         rows={5}
                         className="w-full"
+                        disabled={isSubmitting}
                       />
                     </div>
 
@@ -234,19 +285,24 @@ const Contact = () => {
                       <p>We will not share your information with third parties and you can request deletion at any time.</p>
                     </div>
 
-                    <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3">
-                      <Send className="mr-2 h-4 w-4" />
-                      Send Message
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="mr-2 h-4 w-4" />
+                          Send Message
+                        </>
+                      )}
                     </Button>
                   </form>
-                ) : (
-                  <div className="text-center py-12">
-                    <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">Message Sent Successfully!</h3>
-                    <p className="text-gray-600">
-                      Thank you for your inquiry. We'll get back to you within 24 hours.
-                    </p>
-                  </div>
                 )}
               </CardContent>
             </Card>
