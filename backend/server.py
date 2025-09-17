@@ -257,6 +257,16 @@ async def subscribe_newsletter(subscription: NewsletterSubscription):
     if existing:
         return {"success": True, "message": "Email already subscribed"}
     
+    # Insert new subscription
+    subscription_dict = subscription.dict()
+    result = await db.newsletter_subscriptions.insert_one(subscription_dict)
+    
+    return {
+        "success": True,
+        "message": "Successfully subscribed to newsletter",
+        "id": str(result.inserted_id)
+    }
+    
 # ============================================================================
 # ADMIN ROUTES
 # ============================================================================
