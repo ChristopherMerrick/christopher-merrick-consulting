@@ -1,0 +1,23 @@
+{
+  "name": "christopher-merrick-consulting",
+  "version": "1.0.0",
+  "description": "Professional database consulting website for UK businesses - Christopher Merrick, Sheffield",
+  "scripts": {
+    "build": "cd frontend && yarn install && yarn build",
+    "start": "cd frontend && yarn start",
+    "dev": "concurrently \"cd backend && uvicorn server:app --reload --port 8001\" \"cd frontend && yarn start\"",
+    "install-all": "cd frontend && yarn install && cd ../backend && pip install -r requirements.txt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ChristopherMerrick/christopher-merrick-consulting.git"
+  },
+  "author": "Christopher Merrick",
+  "license": "PROPRIETARY",
+  "workspaces": [
+    "frontend"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
